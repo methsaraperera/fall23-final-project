@@ -121,36 +121,49 @@ QString Advisor::getMessage(){
 }
 
 void Advisor::stepOne(){
+    try {
+        qDebug() << "Step";
+        qDebug() << stepCounter;
+        if(message.toLower() == "freshman"){
+            academicStatus = 1;
+            qDebug() << "AS: ";
+            qDebug() << academicStatus;
+        }
+        else if(message.toLower() == "continuing student"){
+            academicStatus = 2;
+            qDebug() << "AS: ";
+            qDebug() << academicStatus;
+        }
 
-    qDebug() << "Step";
-    qDebug() << stepCounter;
-    if(message.toLower() == "freshman"){
-        academicStatus = 1;
-        qDebug() << "AS: ";
-        qDebug() << academicStatus;
+        DatabaseManager dbManager;
+        if (dbManager.openDatabase()) {
+            dbManager.loadDegreePaths();
+
+            QLabel *newLabel = new QLabel;
+            newLabel->setText("ADVISOR\n\n"
+                              +dbManager.getDegreePathsAsString()
+                              +"\nEnter the Degree Path ID");
+
+            newLabel->setWordWrap(true);
+            newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+            scrollAreaLayout->addWidget(newLabel);
+
+            scrollTimer->start(10);
+            dbManager.closeDatabase();
+            stepCounter = 2;
+        }
     }
-    else if(message.toLower() == "continuing student"){
-        academicStatus = 2;
-        qDebug() << "AS: ";
-        qDebug() << academicStatus;
-    }
-
-    DatabaseManager dbManager;
-    if (dbManager.openDatabase()) {
-        dbManager.loadDegreePaths();
-
+    catch (const std::exception &e) {
         QLabel *newLabel = new QLabel;
-        newLabel->setText("ADVISOR\n\n"
-                          +dbManager.getDegreePathsAsString()
-                          +"\nEnter the Degree Path ID");
+        qDebug() << "Exception in stepOne: " << e.what();
+        newLabel->setText(QString("SYSTEM\n\n"
+                                  "Exception in stepOne: %1").arg(e.what()));
 
         newLabel->setWordWrap(true);
         newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
         scrollAreaLayout->addWidget(newLabel);
 
         scrollTimer->start(10);
-        dbManager.closeDatabase();
-        stepCounter = 2;
     }
 }
 
@@ -158,14 +171,14 @@ void Advisor::stepOne(){
 
 
 void Advisor::stepTwo(){
-    qDebug() << "Step";
-    qDebug() << stepCounter;
-    degreePath.setSelectedPath(translate.translateStringToInt(message));
-    QLabel *newLabel = new QLabel;
-    DatabaseManager dbManager;
+    try {
+        qDebug() << "Step";
+        qDebug() << stepCounter;
+        degreePath.setSelectedPath(translate.translateStringToInt(message));
+        QLabel *newLabel = new QLabel;
+        DatabaseManager dbManager;
 
-    if(academicStatus == 1){
-        if(degreePath.getTermPath() == 1){
+        if(academicStatus == 1){
             if (degreePath.getSelectedPath() == 1) {
                 newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Information Systems\n"
                                   "\nFor your first semester at BMCC as a CIS student you should plan to take:\n"
@@ -221,156 +234,196 @@ void Advisor::stepTwo(){
                 newLabel->setText("ADVISOR\n\nPlease enter a valid message to continue.");
             }
         }
+
+        else if(academicStatus == 2){
+            newLabel->setText("ADVISOR\n\n"
+                              "\n\nWhich term you want to know the classes?"
+                              "\n\t1 - Semester 1"
+                              "\n\t2 - Semester 2"
+                              "\n\t3 - Semester 3"
+                              "\n\t4 - Semester 4"
+                              );
+        }
+
+        else {
+            newLabel->setText("ADVISOR\n\nPlease enter a valid message to continue.");
+
+        }
+
+        newLabel->setWordWrap(true);
+        newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+        scrollAreaLayout->addWidget(newLabel);
+
+        scrollTimer->start(10);
+
+        int id = translate.translateStringToInt(message);
+        qDebug() << id;
+        stepCounter = 3;
     }
+    catch (const std::exception &e) {
+        QLabel *newLabel = new QLabel;
+        qDebug() << "Exception in stepTwo: " << e.what();
+        newLabel->setText(QString("SYSTEM\n\n"
+                                  "Exception in stepTwo: %1").arg(e.what()));
 
-    else if(academicStatus == 2){
-        newLabel->setText("ADVISOR\n\n"
-                          "\n\nWhich term you want to know the classes?"
-                          "\n\t1 - Semester 1"
-                          "\n\t2 - Semester 2"
-                          "\n\t3 - Semester 3"
-                          "\n\t4 - Semester 4"
-                          );
+        newLabel->setWordWrap(true);
+        newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+        scrollAreaLayout->addWidget(newLabel);
+
+        scrollTimer->start(10);
     }
-
-    else {
-        newLabel->setText("ADVISOR\n\nPlease enter a valid message to continue.");
-
-    }
-
-    newLabel->setWordWrap(true);
-    newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
-    scrollAreaLayout->addWidget(newLabel);
-
-    scrollTimer->start(10);
-
-    int id = translate.translateStringToInt(message);
-    qDebug() << id;
-    stepCounter = 3;
 }
 
 void Advisor::stepThree(){
-    QLabel *newLabel = new QLabel;
-    degreePath.setSemester(translate.translateStringToInt(message));
-    if (academicStatus==2){
-        if(degreePath.getSemester()==1){
-            if(degreePath.getSelectedPath()==3){
-                newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
-                                  "\nFor your first semester at BMCC as a CSC student you should plan to take:\n"
-                                  "\n\tMAT 206.5  Intermediate Algebra and Precalculus"
-                                  "\n\tENG 101      English Composition"
-                                  "\n\tCSC 101      Principles in Information Technology and Computation"
-                                  "\n\tXXX xxx      Individual and Society"
-                                  "\n\tXXX xxx      U.S. Experience in Its Diversity"
-                                  "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
-                                  "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
-                                  );
+    try {
+        QLabel *newLabel = new QLabel;
+        degreePath.setSemester(translate.translateStringToInt(message));
+        if (academicStatus==2){
+            if(degreePath.getSemester()==1){
+                if(degreePath.getSelectedPath()==3){
+                    newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
+                                      "\nFor your first semester at BMCC as a CSC student you should plan to take:\n"
+                                      "\n\tMAT 206.5  Intermediate Algebra and Precalculus"
+                                      "\n\tENG 101      English Composition"
+                                      "\n\tCSC 101      Principles in Information Technology and Computation"
+                                      "\n\tXXX xxx      Individual and Society"
+                                      "\n\tXXX xxx      U.S. Experience in Its Diversity"
+                                      "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
+                                      "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
+                                      );
+                }
+            }
+
+            if(degreePath.getSemester()==2){
+                if(degreePath.getSelectedPath()==3){
+                    newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
+                                      "\nFor your second semester at BMCC as a CSC student you should plan to take:\n"
+                                      "\n\tENG 201      Introduction to Literature"
+                                      "\n\tCSC 111      Introduction to Programming"
+                                      "\n\tMAT 301      Analytic Geometry and Calculus I"
+                                      "\n\tSPE 100      Fundamentals of Public Speaking"
+                                      "\n\tXXX xxx      U.S. Experience in Its Diversity"
+                                      "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
+                                      "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
+                                      "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
+                                      " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
+                                      "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
+                                      "\nMAT 206.5 must be passed in order to take MAT 301."
+                                      "\nSPE 102 is an option for non-native speakers of English."
+                                      "\nPHY 215 has a co-requisite course of MAT 302."
+                                      "\nMAT 301 must be passed in order to take MAT 302."
+                                      "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
+                                      "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
+                                      );
+                }
+            }
+
+            if(degreePath.getSemester()==3){
+                if(degreePath.getSelectedPath()==3){
+                    newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
+                                      "\nFor your third semester at BMCC as a CSC student you should plan to take:\n"
+                                      "\n\tPHY 215      University Physics I"
+                                      "\n\tMAT 302      Analytic Geometry and Calculus II"
+                                      "\n\tCSC 211      Advanced Programming Techniques"
+                                      "\n\tCSC 231      Discrete Structures and Applications to Computer Science"
+                                      "\n\tXXX xxx      Program Elective"
+                                      "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
+                                      "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
+                                      "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
+                                      " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
+                                      "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
+                                      "\nMAT 206.5 must be passed in order to take MAT 301."
+                                      "\nSPE 102 is an option for non-native speakers of English."
+                                      "\nPHY 215 has a co-requisite course of MAT 302."
+                                      "\nMAT 301 must be passed in order to take MAT 302."
+                                      "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
+                                      "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
+                                      "\nA total of 6 credits are needed. Choose 2 from CIS 317, CIS 345, CIS 359, CIS 362, CIS 364, CIS 385, CIS 395, CSC 103, GIS 201, or CIS 316."
+                                      "\nCSC 211 and CSC 231 must be passed in order to take CSC 331."
+                                      "\nCSC 211 must be passed in order to take CSC 350."
+                                      );
+                }
+            }
+
+            if(degreePath.getSemester()==4){
+                if(degreePath.getSelectedPath()==3){
+                    newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
+                                      "\nFor your fourth semester at BMCC as a CSC student you should plan to take:\n"
+                                      "\n\tCSC 215      Fundamentals of Computer Systems"
+                                      "\n\tCSC 331      Data Structures"
+                                      "\n\tCSC 350      Software Development"
+                                      "\n\tXXX xxx      Program Elective1"
+                                      "\n\tXXX xxx      World Cultures and Global Issues"
+                                      "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
+                                      "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
+                                      "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
+                                      " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
+                                      "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
+                                      "\nMAT 206.5 must be passed in order to take MAT 301."
+                                      "\nSPE 102 is an option for non-native speakers of English."
+                                      "\nPHY 215 has a co-requisite course of MAT 302."
+                                      "\nMAT 301 must be passed in order to take MAT 302."
+                                      "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
+                                      "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
+                                      "\nA total of 6 credits are needed. Choose 2 from CIS 317, CIS 345, CIS 359, CIS 362, CIS 364, CIS 385, CIS 395, CSC 103, GIS 201, or CIS 316."
+                                      "\nCSC 211 and CSC 231 must be passed in order to take CSC 331."
+                                      "\nCSC 211 must be passed in order to take CSC 350."
+                                      );
+                }
             }
         }
 
-        if(degreePath.getSemester()==2){
-            if(degreePath.getSelectedPath()==3){
-                newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
-                                  "\nFor your second semester at BMCC as a CSC student you should plan to take:\n"
-                                  "\n\tENG 201      Introduction to Literature"
-                                  "\n\tCSC 111      Introduction to Programming"
-                                  "\n\tMAT 301      Analytic Geometry and Calculus I"
-                                  "\n\tSPE 100      Fundamentals of Public Speaking"
-                                  "\n\tXXX xxx      U.S. Experience in Its Diversity"
-                                  "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
-                                  "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
-                                  "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
-                                  " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
-                                  "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
-                                  "\nMAT 206.5 must be passed in order to take MAT 301."
-                                  "\nSPE 102 is an option for non-native speakers of English."
-                                  "\nPHY 215 has a co-requisite course of MAT 302."
-                                  "\nMAT 301 must be passed in order to take MAT 302."
-                                  "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
-                                  "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
-                                  );
-            }
-        }
+        newLabel->setWordWrap(true);
+        newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+        scrollAreaLayout->addWidget(newLabel);
 
-        if(degreePath.getSemester()==3){
-            if(degreePath.getSelectedPath()==3){
-                newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
-                                  "\nFor your third semester at BMCC as a CSC student you should plan to take:\n"
-                                  "\n\tPHY 215      University Physics I"
-                                  "\n\tMAT 302      Analytic Geometry and Calculus II"
-                                  "\n\tCSC 211      Advanced Programming Techniques"
-                                  "\n\tCSC 231      Discrete Structures and Applications to Computer Science"
-                                  "\n\tXXX xxx      Program Elective"
-                                  "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
-                                  "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
-                                  "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
-                                  " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
-                                  "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
-                                  "\nMAT 206.5 must be passed in order to take MAT 301."
-                                  "\nSPE 102 is an option for non-native speakers of English."
-                                  "\nPHY 215 has a co-requisite course of MAT 302."
-                                  "\nMAT 301 must be passed in order to take MAT 302."
-                                  "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
-                                  "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
-                                  "\nA total of 6 credits are needed. Choose 2 from CIS 317, CIS 345, CIS 359, CIS 362, CIS 364, CIS 385, CIS 395, CSC 103, GIS 201, or CIS 316."
-                                  "\nCSC 211 and CSC 231 must be passed in order to take CSC 331."
-                                  "\nCSC 211 must be passed in order to take CSC 350."
-                                  );
-            }
-        }
+        scrollTimer->start(10);
 
-        if(degreePath.getSemester()==4){
-            if(degreePath.getSelectedPath()==3){
-                newLabel->setText("ADVISOR\n\nYou have selected the degree path Computer Science\n"
-                                  "\nFor your fourth semester at BMCC as a CSC student you should plan to take:\n"
-                                  "\n\tCSC 215      Fundamentals of Computer Systems"
-                                  "\n\tCSC 331      Data Structures"
-                                  "\n\tCSC 350      Software Development"
-                                  "\n\tXXX xxx      Program Elective1"
-                                  "\n\tXXX xxx      World Cultures and Global Issues"
-                                  "\n\n**During your program you MUST take at least ONE Writing Intensive (WI) course"
-                                  "\nCSC 101 should be taken in the first semester as it is a prerequisite course for CSC 110"
-                                  "\nStudents are required to take MAT 206.5. MAT 206.5 is a combination course of Intermediate Algebra and Trigonometry and Precalculus and will help to fulfill"
-                                  " the General Elective requirement of which 6 credits are required. The remaining 2 credits can be satisfied by taking STEM variants in the Common Core."
-                                  "\nCSC 101 and MAT 206.5 are prerequisite courses to CSC 111."
-                                  "\nMAT 206.5 must be passed in order to take MAT 301."
-                                  "\nSPE 102 is an option for non-native speakers of English."
-                                  "\nPHY 215 has a co-requisite course of MAT 302."
-                                  "\nMAT 301 must be passed in order to take MAT 302."
-                                  "\nCSC 111 must be passed in order to take CSC 211 and CSC 215."
-                                  "\nCSC 111 and MAT 301 must be passed in order to take CSC 231."
-                                  "\nA total of 6 credits are needed. Choose 2 from CIS 317, CIS 345, CIS 359, CIS 362, CIS 364, CIS 385, CIS 395, CSC 103, GIS 201, or CIS 316."
-                                  "\nCSC 211 and CSC 231 must be passed in order to take CSC 331."
-                                  "\nCSC 211 must be passed in order to take CSC 350."
-                                  );
-            }
-        }
+        stepCounter = 4;
     }
+    catch (const std::exception &e) {
+        QLabel *newLabel = new QLabel;
+        qDebug() << "Exception in stepThree: " << e.what();
+        newLabel->setText(QString("SYSTEM\n\n"
+                                  "Exception in stepThree: %1").arg(e.what()));
 
-    newLabel->setWordWrap(true);
-    newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
-    scrollAreaLayout->addWidget(newLabel);
+        newLabel->setWordWrap(true);
+        newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+        scrollAreaLayout->addWidget(newLabel);
 
-    scrollTimer->start(10);
-
-    stepCounter = 4;
+        scrollTimer->start(10);
+    }
 }
 
 
 void Advisor::stepFour() {
-    if (academicStatus == 2) {
-        QVector<std::shared_ptr<ClassPrerequisites>> unsatisfiedClasses = dbManager->getClassPrerequisites();
+    try {
+        if (academicStatus == 2) {
+            QVector<std::shared_ptr<ClassPrerequisites>> unsatisfiedClasses = dbManager->getClassPrerequisites();
 
-        QLabel *newLabel = new QLabel;
-        dbManager->loadDegreePaths();
+            QLabel *newLabel = new QLabel;
+            dbManager->loadDegreePaths();
 
-        if(dbManager->openDatabase()) {
-            if (!unsatisfiedClasses.isEmpty()) {
-                newLabel->setText("ADVISOR\n\nUnsatisfied classes to take:\n\t" + dbManager->getRequiredClassesAsString());
-            } else {
-                newLabel->setText("ADVISOR\n\nCongratulations! You have completed all required classes for the selected degree path.");
+            if(dbManager->openDatabase()) {
+                if (!unsatisfiedClasses.isEmpty()) {
+                    newLabel->setText("ADVISOR\n\nUnsatisfied classes to take:\n\t" + dbManager->getRequiredClassesAsString());
+                } else {
+                    newLabel->setText("ADVISOR\n\nCongratulations! You have completed all required classes for the selected degree path.");
+                }
             }
+            newLabel->setWordWrap(true);
+            newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
+            scrollAreaLayout->addWidget(newLabel);
+
+            scrollTimer->start(10);
         }
+    }
+    catch (const std::exception &e) {
+        QLabel *newLabel = new QLabel;
+        qDebug() << "Exception in stepFour: " << e.what();
+        newLabel->setText(QString("SYSTEM\n\n"
+                                  "Exception in stepFour: %1").arg(e.what()));
+
         newLabel->setWordWrap(true);
         newLabel->setStyleSheet("border: 1px solid; border-color: rgb(175, 193, 220); padding: 5px;");
         scrollAreaLayout->addWidget(newLabel);
