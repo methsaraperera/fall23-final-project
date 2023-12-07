@@ -8,7 +8,7 @@ SQLite
 
 ## Environment
 QT Framework 6.6.0 for Mac OS \
-DBeaver version 23.2.4.202311051706"
+DBeaver version 23.2.4.202311051706
 
 ## Project links: 
 [Video](https://www.youtube.com/watch?v=5PbESbaHiAc)\
