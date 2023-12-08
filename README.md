@@ -16,6 +16,6 @@ DBeaver version 23.2.4.202311051706
 
 
 ## Setup database
-Database created using SQLite version 3.41.2
+Database created using SQLite version 3.41.2 \
 Step 1 - Execute [sqlite-script-create-tables.sql](https://github.com/methsaraperera/fall23-final-project/blob/main/sqlite-script-create-tables.sql) file to create the tables \
 Step 2 - Execute [database-data.sql](https://github.com/methsaraperera/fall23-final-project/blob/main/database-data.sql) file to insert data to the tables
