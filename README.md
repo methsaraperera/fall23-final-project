@@ -3,8 +3,8 @@
 Automatic academic guidance chatbot system which allows students to select their major and semester and gives them personalized academic suggestions for the selected major and semester.
 
 ## Languages used:
-C++ (Apple clang version 15.0.0 (clang-1500.0.40.1))\
-SQLite (Version 3.41.2)
+C++ (clang-1500.0.40.1)\
+SQLite (3.41.2)
 
 ## Environment
 QT Framework 6.6.0 for Mac OS \
@@ -44,10 +44,10 @@ Before you begin, make sure you have the following prerequisites installed:
     ```
 
 ## BMCC Virtual Advisor Bot Project Setup
-
-1. Open the QT project located in the file `final_project -> BMCC-Virtual-Advisor-Bot -> CMakeLists.txt`.
-2. This will import the project into QT.
-3. Click on the "RUN" button in QT to execute the project.
+1. Download all the files into one folder.
+2. Open the QT and import the project from the file `CMakeLists.txt`.
+3. This will import the project into QT.
+4. Click on the "RUN" button in QT to execute the project.
 
 
 
